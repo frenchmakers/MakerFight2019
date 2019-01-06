@@ -15,8 +15,6 @@ void setup() {
   Serial.begin(9600);
   #endif
   
-  randomSeed(analogRead(0));  
-  
   brain.init(LEFT_EYE_ADDR, RIGHT_EYE_ADDR);
 }
 

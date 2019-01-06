@@ -8,11 +8,15 @@
 #ifndef RobotBrain_h
 #define RobotBrain_h
 
+#include "RobotEye.h"
+
 /**
  * Cerveau du robot
  */
 class RobotBrain {
   private:
+    RobotEye *m_left;
+    RobotEye *m_right;
   protected:
   public:
     RobotBrain();
