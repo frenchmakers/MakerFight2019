@@ -17,6 +17,7 @@ class RobotBrain {
   private:
     RobotEye *m_left;
     RobotEye *m_right;
+    Timeline m_timeline;
   protected:
   public:
     RobotBrain();

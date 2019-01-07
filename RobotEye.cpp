@@ -42,8 +42,12 @@ void RobotEye::init(uint8_t addr, uint8_t type) {
   setBrightness(15); // max brightness
 
   clear();
+  m_refreshEye = false;
+  m_lookAt = EYE_LOOK_FORWARD;
   m_state = EYE_STATE_NONE;
   m_stateStep = 0;
+
+  m_eyeTimeline.reset();
 }
 
 /**
@@ -114,15 +118,58 @@ void RobotEye::displayFrame(frame *f) {
  * Dessine l'oeil
  */
 void RobotEye::drawEye() {
+  // Dessin du fond
   for(uint8_t i = 0; i<8; i++) {
     displayBuffer[i] = eye_back[i];
   }
-  displayBuffer[eye_pupil_line] |= eye_pupil_pixels;
+  
+  // Dessin de la pupille
+  uint16_t pixels = eye_pupil_pixels;
+  uint8_t line = eye_pupil_line;
+  if( m_lookAt & EYE_LOOK_RIGHT ) {
+    pixels = eye_type == EYE_LEFT ? pixels >> 1 : pixels << 1;
+  } else if( m_lookAt & EYE_LOOK_LEFT ) {
+    pixels = eye_type == EYE_LEFT ? pixels << 1 : pixels >> 1;
+  } 
+  if( m_lookAt & EYE_LOOK_UP ) {
+    line = line - 1;
+  } else if( m_lookAt & EYE_LOOK_DOWN ) {
+    line = line + 1;
+  } 
+  displayBuffer[line] |= pixels;
+  
+  // Dessin de la paupière
+  masked_frame *lib = &eyelib;
+  for(uint8_t i = 0; i<8; i++) {
+    displayBuffer[i] &= ~lib->mask[i];
+    displayBuffer[i] |= lib->pixels[i];
+  }
+
+  // Affichage du buffer
   displayFrame(&displayBuffer);
+}
+
+/**
+ * Demande à l'oeil de regarder dans une direction
+ */
+void RobotEye::lookAt(uint8_t direction) {
+  m_lookAt = direction;
+  m_refreshEye = true;
+}
+
+/**
+ * Retourne la direction dans laquelle regarder
+ */
+uint8_t RobotEye::getLookAt() {
+  return m_lookAt;
 }
 
 /**
  * Exécution de l'oeil
  */
 void RobotEye::run() {
+  if(m_refreshEye) {
+    drawEye();
+    m_refreshEye = false;
+  }
 }
