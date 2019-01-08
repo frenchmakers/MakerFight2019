@@ -19,6 +19,9 @@
 #include "RobotEye.h"
 #include "eye_data.h"
 
+static uint8_t rollingPositions[] = { EYE_LOOK_UP, EYE_LOOK_UP_RIGHT, EYE_LOOK_RIGHT, EYE_LOOK_DOWN_RIGHT, EYE_LOOK_DOWN, EYE_LOOK_DOWN_LEFT, EYE_LOOK_LEFT, EYE_LOOK_UP_LEFT };
+#define rollingPositionsCount 8
+
 /**
  * Constructeur
  */
@@ -165,9 +168,54 @@ uint8_t RobotEye::getLookAt() {
 }
 
 /**
+ * Place l'oeil en mode normal
+ */
+void RobotEye::normal() {
+  m_state = EYE_STATE_NORMAL;
+  lookAt(EYE_LOOK_FORWARD);
+}
+
+/**
+ * Place l'oeil en mode 'rolling'
+ */
+void RobotEye::rolling() {
+  m_state = EYE_STATE_ROLLING;
+  m_stateStep = random(rollingPositionsCount);
+  m_eyeTimeline.reset();
+}
+
+/**
+ * Retourne l'état de l'oeil
+ */
+int RobotEye::getState() {
+  return m_state;
+}
+
+/**
+ * Traitement de l'état rolling
+ */
+void RobotEye::processStateRolling() {
+  while(m_eyeTimeline.isTimePasted(30)) {
+    // Prochaine position
+    m_stateStep += eye_type == EYE_LEFT ? 1 : -1 ;
+    
+    if(m_stateStep<0) 
+      m_stateStep = rollingPositionsCount-1;
+    else if(m_stateStep>=rollingPositionsCount) 
+      m_stateStep = 0;
+      
+    lookAt((uint8_t)rollingPositions[m_stateStep]);
+  }
+}
+
+/**
  * Exécution de l'oeil
  */
 void RobotEye::run() {
+  switch(m_state) {
+    //case EYE_STATE_NORMAL:    processStateNormal(); break;
+    case EYE_STATE_ROLLING:   processStateRolling(); break;
+  }
   if(m_refreshEye) {
     drawEye();
     m_refreshEye = false;

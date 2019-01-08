@@ -26,7 +26,9 @@
 #define EYE_LOOK_DOWN_RIGHT   (EYE_LOOK_DOWN | EYE_LOOK_RIGHT)
 
 // Etats d'un oeil
-#define EYE_STATE_NONE 0
+#define EYE_STATE_NONE      0     // L'oeil ne fait rien
+#define EYE_STATE_NORMAL    1     // l'oeil est dans un état normal c'est à dire sans animation
+#define EYE_STATE_ROLLING   2     // l'oeil roule
 
 /**
  * Image d'une animation
@@ -57,6 +59,8 @@ class RobotEye {
   protected:
     void clear();
     void displayFrame(frame *f);
+
+    void processStateRolling();
   public:
     RobotEye();
     
@@ -68,6 +72,11 @@ class RobotEye {
     
     void lookAt(uint8_t direction = EYE_LOOK_FORWARD);
     uint8_t getLookAt();
+
+    void normal();
+    void rolling();
+
+    int getState();
     
     void run();
 };
