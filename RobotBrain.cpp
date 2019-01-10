@@ -33,18 +33,27 @@ void RobotBrain::init(uint8_t left_addr, uint8_t right_addr) {
  * Exécution du cerveau
  */
 void RobotBrain::run() {
+  // Traitement des yeux
   m_right->run();
-  m_left->run();  
+  m_left->run();
   
-  m_right->drawEye();
-  m_left->drawEye();
-
-  if(m_right->getState()==EYE_STATE_ROLLING) {
+  int eyeState = getEyeState(m_right);
+  int eyeAction = getEyeAction(m_right);
+  
+  // Si l'oeil n'est pas encore ouvert on provoque son ouverture
+  if(eyeState == EYE_STATE_NONE) {
+    m_right->open();
+    m_left->open();
+  } 
+  // Si une action est en cours on attend 5 secondes
+  else if(eyeAction != EYE_ACTION_NONE) {
     if(m_timeline.isTimePasted(5000)) {
       m_right->normal();
       m_left->normal();
     }
-  } else {
+  }
+  // Sinon on anime les yeux
+  else {
     while(m_timeline.isTimePasted(1000)) 
     {
       uint8_t look = m_right->getLookAt();
@@ -68,7 +77,6 @@ void RobotBrain::run() {
       m_right->lookAt(look);
       m_left->lookAt(look);
     }
-    
   }
   
 }

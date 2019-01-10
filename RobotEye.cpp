@@ -27,6 +27,7 @@ static uint8_t rollingPositions[] = { EYE_LOOK_UP, EYE_LOOK_UP_RIGHT, EYE_LOOK_R
  */
 RobotEye::RobotEye() {
   i2c_addr = 0x00;
+  m_eyeLib = NULL;
 }
 
 /**
@@ -51,6 +52,8 @@ void RobotEye::init(uint8_t addr, uint8_t type) {
   m_stateStep = 0;
 
   m_eyeTimeline.reset();
+  m_actionTimeline.reset();
+  m_stateTimeline.reset();
 }
 
 /**
@@ -142,12 +145,14 @@ void RobotEye::drawEye() {
   displayBuffer[line] |= pixels;
   
   // Dessin de la paupière
-  masked_frame *lib = &eyelib;
-  for(uint8_t i = 0; i<8; i++) {
-    displayBuffer[i] &= ~lib->mask[i];
-    displayBuffer[i] |= lib->pixels[i];
+  if( m_eyeLib != NULL ) 
+  {
+    for(uint8_t i = 0; i<8; i++) {
+      displayBuffer[i] &= ~m_eyeLib->mask[i];
+      displayBuffer[i] |= m_eyeLib->pixels[i];
+    }
   }
-
+  
   // Affichage du buffer
   displayFrame(&displayBuffer);
 }
@@ -168,10 +173,26 @@ uint8_t RobotEye::getLookAt() {
 }
 
 /**
+ * Défini l'oeil dans une nouvelle action
+ */
+void RobotEye::setAction(int action) {
+  m_state = (m_state & ~EYE_ACTION_MASK) | (action & EYE_ACTION_MASK);
+  m_actionTimeline.reset();
+}
+
+/**
+ * Défini l'oeil dans un nouvel état
+ */
+void RobotEye::setState(int state) {
+  m_state = (m_state & ~EYE_STATE_MASK) | (state & EYE_STATE_MASK);
+  m_stateTimeline.reset();
+}
+
+/**
  * Place l'oeil en mode normal
  */
 void RobotEye::normal() {
-  m_state = EYE_STATE_NORMAL;
+  setAction(EYE_ACTION_NONE);
   lookAt(EYE_LOOK_FORWARD);
 }
 
@@ -179,9 +200,26 @@ void RobotEye::normal() {
  * Place l'oeil en mode 'rolling'
  */
 void RobotEye::rolling() {
-  m_state = EYE_STATE_ROLLING;
-  m_stateStep = random(rollingPositionsCount);
-  m_eyeTimeline.reset();
+  setAction(EYE_ACTION_ROLLING);
+  m_actionStep = random(rollingPositionsCount);
+}
+
+/**
+ * Provoque l'ouverture de l'oeil
+ */
+void RobotEye::open() {
+  setState(EYE_STATE_OPENING);
+  m_stateStep = 0;
+  m_refreshEye = true; 
+}
+
+/**
+ * Provoque la fermeture de l'oeil
+ */
+void RobotEye::close() {
+  setState(EYE_STATE_CLOSING);
+  m_stateStep = 0;
+  m_refreshEye = true; 
 }
 
 /**
@@ -192,19 +230,51 @@ int RobotEye::getState() {
 }
 
 /**
- * Traitement de l'état rolling
+ * Traitement de l'état opening
  */
-void RobotEye::processStateRolling() {
-  while(m_eyeTimeline.isTimePasted(30)) {
+void RobotEye::processStateOpening() {
+  if(m_stateTimeline.isTimePasted(eyelib_movement.speed)) {
+    m_stateStep++;
+    if(m_stateStep >= eyelib_movement.count) {
+      setState(EYE_STATE_OPENED); 
+      m_eyeLib = &eyelib;
+    } else {
+      m_eyeLib = &eyelib_movement.frames[eyelib_movement.count - m_stateStep];
+    }
+    m_refreshEye = true; 
+  }
+}
+
+/**
+ * Traitement de l'état closing
+ */
+void RobotEye::processStateClosing() {
+  if(m_stateTimeline.isTimePasted(eyelib_movement.speed)) {
+    m_stateStep++;
+    if(m_stateStep >= eyelib_movement.count) {
+      setState(EYE_STATE_CLOSED); 
+      m_eyeLib = &eyelib;
+    } else {
+      m_eyeLib = &eyelib_movement.frames[m_stateStep];
+    }
+    m_refreshEye = true; 
+  }
+}
+
+/**
+ * Traitement de l'action rolling
+ */
+void RobotEye::processActionRolling() {
+  while(m_actionTimeline.isTimePasted(30)) {
     // Prochaine position
-    m_stateStep += eye_type == EYE_LEFT ? 1 : -1 ;
+    m_actionStep += eye_type == EYE_LEFT ? 1 : -1 ;
     
-    if(m_stateStep<0) 
-      m_stateStep = rollingPositionsCount-1;
-    else if(m_stateStep>=rollingPositionsCount) 
-      m_stateStep = 0;
+    if(m_actionStep<0) 
+      m_actionStep = rollingPositionsCount-1;
+    else if(m_actionStep>=rollingPositionsCount) 
+      m_actionStep = 0;
       
-    lookAt((uint8_t)rollingPositions[m_stateStep]);
+    lookAt((uint8_t)rollingPositions[m_actionStep]);
   }
 }
 
@@ -212,10 +282,21 @@ void RobotEye::processStateRolling() {
  * Exécution de l'oeil
  */
 void RobotEye::run() {
-  switch(m_state) {
-    //case EYE_STATE_NORMAL:    processStateNormal(); break;
-    case EYE_STATE_ROLLING:   processStateRolling(); break;
+  // Si l'état est à NONE alors on ne fait rien
+  if(m_state == EYE_STATE_NONE) return;
+
+  // Traitement des états
+  switch(getEyeState(this)) {
+    case EYE_STATE_OPENING: processStateOpening(); break;
+    case EYE_STATE_CLOSING: processStateClosing(); break;
   }
+  // Traitement des actions
+  switch(getEyeAction(this)) {
+    case EYE_ACTION_ROLLING: processActionRolling(); break;
+  }
+  // Traitement des sentiments
+
+  // L'oeil est à redessiner ?
   if(m_refreshEye) {
     drawEye();
     m_refreshEye = false;

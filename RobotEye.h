@@ -25,10 +25,27 @@
 #define EYE_LOOK_DOWN_LEFT    (EYE_LOOK_DOWN | EYE_LOOK_LEFT)
 #define EYE_LOOK_DOWN_RIGHT   (EYE_LOOK_DOWN | EYE_LOOK_RIGHT)
 
-// Etats d'un oeil
-#define EYE_STATE_NONE      0     // L'oeil ne fait rien
-#define EYE_STATE_NORMAL    1     // l'oeil est dans un état normal c'est à dire sans animation
-#define EYE_STATE_ROLLING   2     // l'oeil roule
+// Etat général de l'oeil
+#define EYE_STATE_NONE      0x00000000      // L'oeil est éteint
+#define EYE_STATE_OPENED    0x00000001      // Paupière ouverte
+#define EYE_STATE_OPENING   0x00000002      // Paupière en cours d'ouverture
+#define EYE_STATE_CLOSED    0x00000003      // Paupière fermée
+#define EYE_STATE_CLOSING   0x00000004      // Paupière en cours de fermeture
+#define EYE_STATE_MASK      0x000000FF      // Masque pour isoler l'état général
+#define getEyeState(eye) (eye->getState() & EYE_STATE_MASK)
+
+// Actions
+#define EYE_ACTION_NONE     0x00000000      // L'oeil n'a aucun comportement pour le moment
+#define EYE_ACTION_ROLLING  0x00000100      // L'oeil est en cours de roulement
+#define EYE_ACTION_MASK     0x0FFFFF00      // Masque pour isoler l'état de actions
+#define getEyeAction(eye) (eye->getState() & EYE_ACTION_MASK)
+
+// Sentiments
+#define EYE_FEELING_NORMAL  0x00000000      // Le regard est normal
+#define EYE_FEELING_ANGRY   0x10000000      // Le regard est en colère
+#define EYE_FEELING_SCARED  0x20000000      // Le regard est apeuré
+#define EYE_FEELING_MASK    0xF0000000      // Masque pour isoler l'état des sentiments
+#define getEyeFeeling(eye) (eye->getState() & EYE_FEELING_MASK)
 
 /**
  * Image d'une animation
@@ -44,6 +61,24 @@ typedef struct {
 } masked_frame;
 
 /**
+ * Animation avec des frames
+ */
+typedef struct {
+  frame *frames;
+  int count;
+  int speed;
+} animation;
+
+/**
+ * Animation avec des frames avec masque
+ */
+typedef struct {
+  masked_frame *frames;
+  int count;
+  int speed;
+} masked_animation;
+
+/**
  * Contrôleur d'un oeil
  */
 class RobotEye {
@@ -53,14 +88,26 @@ class RobotEye {
     frame displayBuffer;
     bool m_refreshEye;
     uint8_t m_lookAt;
+    masked_frame *m_eyeLib;
     int m_state;
     int m_stateStep;
+    int m_actionStep;
     Timeline m_eyeTimeline;
+    Timeline m_stateTimeline;
+    Timeline m_actionTimeline;
   protected:
     void clear();
     void displayFrame(frame *f);
 
-    void processStateRolling();
+    void drawEye();
+    
+    void setAction(int action);
+    void setState(int state);
+
+    void processStateOpening();
+    void processStateClosing();
+
+    void processActionRolling();
   public:
     RobotEye();
     
@@ -68,10 +115,11 @@ class RobotEye {
     void setBrightness(uint8_t b);
     void blinkRate(uint8_t b);
 
-    void drawEye();
-    
     void lookAt(uint8_t direction = EYE_LOOK_FORWARD);
     uint8_t getLookAt();
+
+    void open();
+    void close();
 
     void normal();
     void rolling();
