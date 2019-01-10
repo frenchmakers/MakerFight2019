@@ -31,6 +31,7 @@
 #define EYE_STATE_OPENING   0x00000002      // Paupière en cours d'ouverture
 #define EYE_STATE_CLOSED    0x00000003      // Paupière fermée
 #define EYE_STATE_CLOSING   0x00000004      // Paupière en cours de fermeture
+#define EYE_STATE_BLINKING  0x00000005      // Clignement de l'oeil
 #define EYE_STATE_MASK      0x000000FF      // Masque pour isoler l'état général
 #define getEyeState(eye) (eye->getState() & EYE_STATE_MASK)
 
@@ -106,6 +107,7 @@ class RobotEye {
 
     void processStateOpening();
     void processStateClosing();
+    void processStateBlinking();
 
     void processActionRolling();
   public:
@@ -120,6 +122,7 @@ class RobotEye {
 
     void open();
     void close();
+    void blink();
 
     void normal();
     void rolling();

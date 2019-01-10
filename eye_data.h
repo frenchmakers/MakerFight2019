@@ -235,7 +235,7 @@ static masked_frame eyelib_movement_frames[] = {
 static masked_animation eyelib_movement = {
   eyelib_movement_frames
   , 7
-  , 150
+  , 20
 };
 
 #endif // eye_data_h

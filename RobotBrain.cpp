@@ -71,6 +71,8 @@ void RobotBrain::run() {
         //look = EYE_LOOK_FORWARD; 
         m_right->rolling();
         m_left->rolling();
+        m_right->blink();
+        m_left->blink();
         break;
       }
   

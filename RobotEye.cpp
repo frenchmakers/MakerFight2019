@@ -209,7 +209,8 @@ void RobotEye::rolling() {
  */
 void RobotEye::open() {
   setState(EYE_STATE_OPENING);
-  m_stateStep = 0;
+  m_stateStep = -1;
+  m_eyeLib = &eyelib_closed;
   m_refreshEye = true; 
 }
 
@@ -218,7 +219,18 @@ void RobotEye::open() {
  */
 void RobotEye::close() {
   setState(EYE_STATE_CLOSING);
-  m_stateStep = 0;
+  m_stateStep = -1;
+  m_eyeLib = &eyelib;
+  m_refreshEye = true; 
+}
+
+/**
+ * Cligne
+ */
+void RobotEye::blink() {
+  setState(EYE_STATE_BLINKING);
+  m_stateStep = -1;
+  m_eyeLib = &eyelib;
   m_refreshEye = true; 
 }
 
@@ -239,7 +251,7 @@ void RobotEye::processStateOpening() {
       setState(EYE_STATE_OPENED); 
       m_eyeLib = &eyelib;
     } else {
-      m_eyeLib = &eyelib_movement.frames[eyelib_movement.count - m_stateStep];
+      m_eyeLib = &eyelib_movement.frames[(eyelib_movement.count-1) - m_stateStep];
     }
     m_refreshEye = true; 
   }
@@ -253,9 +265,27 @@ void RobotEye::processStateClosing() {
     m_stateStep++;
     if(m_stateStep >= eyelib_movement.count) {
       setState(EYE_STATE_CLOSED); 
-      m_eyeLib = &eyelib;
+      m_eyeLib = &eyelib_closed;
     } else {
       m_eyeLib = &eyelib_movement.frames[m_stateStep];
+    }
+    m_refreshEye = true; 
+  }
+}
+
+/**
+ * Traitement de l'état clignotement
+ */
+void RobotEye::processStateBlinking() {
+  if(m_stateTimeline.isTimePasted(eyelib_movement.speed)) {
+    m_stateStep++;
+    if(m_stateStep < eyelib_movement.count) {
+      m_eyeLib = &eyelib_movement.frames[m_stateStep];
+    } else if(m_stateStep >= eyelib_movement.count && m_stateStep < 2*eyelib_movement.count) {
+      m_eyeLib = &eyelib_movement.frames[(eyelib_movement.count-1) - (m_stateStep-eyelib_movement.count)];
+    } else {
+      setState(EYE_STATE_OPENED); 
+      m_eyeLib = &eyelib;
     }
     m_refreshEye = true; 
   }
@@ -287,8 +317,9 @@ void RobotEye::run() {
 
   // Traitement des états
   switch(getEyeState(this)) {
-    case EYE_STATE_OPENING: processStateOpening(); break;
-    case EYE_STATE_CLOSING: processStateClosing(); break;
+    case EYE_STATE_OPENING:   processStateOpening(); break;
+    case EYE_STATE_CLOSING:   processStateClosing(); break;
+    case EYE_STATE_BLINKING:  processStateBlinking(); break;
   }
   // Traitement des actions
   switch(getEyeAction(this)) {
