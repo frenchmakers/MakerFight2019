@@ -27,6 +27,8 @@ void RobotBrain::init(uint8_t left_addr, uint8_t right_addr) {
   m_left->init(left_addr, EYE_LEFT);
 
   m_timeline.reset();
+  m_blinkTimeline.reset();
+  m_feelingTimeline.reset();
 }
 
 /**
@@ -37,8 +39,36 @@ void RobotBrain::run() {
   m_right->run();
   m_left->run();
   
-  int eyeState = getEyeState(m_right);
-  int eyeAction = getEyeAction(m_right);
+  long eyeState = getEyeState(m_right);
+  long eyeAction = getEyeAction(m_right);
+  long eyeFeeling = getEyeFeeling(m_right);
+  
+  /**
+   * Cligne des yeux toutes les 3 secondes 
+   */
+  if(eyeState != EYE_STATE_NONE && m_blinkTimeline.isTimePasted(3000)) {
+    int r = random(20000);
+    if(r % 3 != 1)
+      m_right->blink();
+    if(r % 3 != 0)
+      m_left->blink();
+  }
+  
+  /**
+   * On change de sentiment toutes les 10 secondes
+   */
+  if(eyeState != EYE_STATE_NONE && m_feelingTimeline.isTimePasted(10000)) {
+    if(eyeFeeling==EYE_FEELING_NORMAL) {
+      m_right->isAngry();
+      m_left->isAngry();
+    } else if(eyeFeeling==EYE_FEELING_ANGRY) {
+      m_right->isScared();
+      m_left->isScared();
+    } else if(eyeFeeling==EYE_FEELING_SCARED) {
+      m_right->isNormal();
+      m_left->isNormal();
+    }
+  }
   
   // Si l'oeil n'est pas encore ouvert on provoque son ouverture
   if(eyeState == EYE_STATE_NONE) {
@@ -71,8 +101,6 @@ void RobotBrain::run() {
         //look = EYE_LOOK_FORWARD; 
         m_right->rolling();
         m_left->rolling();
-        m_right->blink();
-        m_left->blink();
         break;
       }
   

@@ -89,8 +89,9 @@ class RobotEye {
     frame displayBuffer;
     bool m_refreshEye;
     uint8_t m_lookAt;
-    masked_frame *m_eyeLib;
-    int m_state;
+    masked_frame *m_eyeLip;
+    masked_animation *m_eyeLip_movement;
+    long m_state;
     int m_stateStep;
     int m_actionStep;
     Timeline m_eyeTimeline;
@@ -102,14 +103,18 @@ class RobotEye {
 
     void drawEye();
     
-    void setAction(int action);
-    void setState(int state);
+    void setAction(long action);
+    void setState(long state);
+    void setFeeling(long feeling);
 
     void processStateOpening();
     void processStateClosing();
     void processStateBlinking();
 
     void processActionRolling();
+
+    masked_frame *getOpenedEye();
+    masked_frame *getClosedEye();
   public:
     RobotEye();
     
@@ -127,7 +132,11 @@ class RobotEye {
     void normal();
     void rolling();
 
-    int getState();
+    void isNormal();
+    void isAngry();
+    void isScared();
+
+    long getState();
     
     void run();
 };

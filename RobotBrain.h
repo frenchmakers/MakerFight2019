@@ -18,6 +18,8 @@ class RobotBrain {
     RobotEye *m_left;
     RobotEye *m_right;
     Timeline m_timeline;
+    Timeline m_blinkTimeline;
+    Timeline m_feelingTimeline;
   protected:
   public:
     RobotBrain();

@@ -27,7 +27,8 @@ static uint8_t rollingPositions[] = { EYE_LOOK_UP, EYE_LOOK_UP_RIGHT, EYE_LOOK_R
  */
 RobotEye::RobotEye() {
   i2c_addr = 0x00;
-  m_eyeLib = NULL;
+  m_eyeLip = NULL;
+  m_eyeLip_movement = NULL;
 }
 
 /**
@@ -54,6 +55,8 @@ void RobotEye::init(uint8_t addr, uint8_t type) {
   m_eyeTimeline.reset();
   m_actionTimeline.reset();
   m_stateTimeline.reset();
+
+  isNormal();
 }
 
 /**
@@ -121,6 +124,26 @@ void RobotEye::displayFrame(frame *f) {
 }
 
 /**
+ * Retourne la frame de l'oeil ouvert
+ */
+masked_frame*RobotEye::getOpenedEye() {
+  switch(getEyeFeeling(this)) {
+    case EYE_FEELING_ANGRY: return &eyelip_angry;
+    case EYE_FEELING_SCARED: return &eyelip_scared;
+    case EYE_FEELING_NORMAL:
+    default:
+      return &eyelip;
+  }
+}
+
+/**
+ * Retourne la frame de l'oeil fermé
+ */
+masked_frame*RobotEye::getClosedEye() {
+  return &eyelip_closed;
+}
+
+/**
  * Dessine l'oeil
  */
 void RobotEye::drawEye() {
@@ -145,11 +168,11 @@ void RobotEye::drawEye() {
   displayBuffer[line] |= pixels;
   
   // Dessin de la paupière
-  if( m_eyeLib != NULL ) 
+  if( m_eyeLip != NULL ) 
   {
     for(uint8_t i = 0; i<8; i++) {
-      displayBuffer[i] &= ~m_eyeLib->mask[i];
-      displayBuffer[i] |= m_eyeLib->pixels[i];
+      displayBuffer[i] &= ~m_eyeLip->mask[i];
+      displayBuffer[i] |= m_eyeLip->pixels[i];
     }
   }
   
@@ -175,7 +198,7 @@ uint8_t RobotEye::getLookAt() {
 /**
  * Défini l'oeil dans une nouvelle action
  */
-void RobotEye::setAction(int action) {
+void RobotEye::setAction(long action) {
   m_state = (m_state & ~EYE_ACTION_MASK) | (action & EYE_ACTION_MASK);
   m_actionTimeline.reset();
 }
@@ -183,9 +206,16 @@ void RobotEye::setAction(int action) {
 /**
  * Défini l'oeil dans un nouvel état
  */
-void RobotEye::setState(int state) {
+void RobotEye::setState(long state) {
   m_state = (m_state & ~EYE_STATE_MASK) | (state & EYE_STATE_MASK);
   m_stateTimeline.reset();
+}
+
+/**
+ * Défini le sentiment de l'oeil
+ */
+void RobotEye::setFeeling(long feeling) {
+  m_state = (m_state & ~EYE_FEELING_MASK) | (feeling & EYE_FEELING_MASK);
 }
 
 /**
@@ -210,7 +240,7 @@ void RobotEye::rolling() {
 void RobotEye::open() {
   setState(EYE_STATE_OPENING);
   m_stateStep = -1;
-  m_eyeLib = &eyelib_closed;
+  m_eyeLip = getClosedEye();
   m_refreshEye = true; 
 }
 
@@ -220,7 +250,7 @@ void RobotEye::open() {
 void RobotEye::close() {
   setState(EYE_STATE_CLOSING);
   m_stateStep = -1;
-  m_eyeLib = &eyelib;
+  m_eyeLip = getOpenedEye();
   m_refreshEye = true; 
 }
 
@@ -230,14 +260,44 @@ void RobotEye::close() {
 void RobotEye::blink() {
   setState(EYE_STATE_BLINKING);
   m_stateStep = -1;
-  m_eyeLib = &eyelib;
+  m_eyeLip = getOpenedEye();
   m_refreshEye = true; 
+}
+
+/**
+ * Ce sent normal
+ */
+void RobotEye::isNormal() {
+  setFeeling(EYE_FEELING_NORMAL);
+  m_eyeLip = getOpenedEye();
+  m_refreshEye = true; 
+  m_eyeLip_movement = &eyelip_movement_normal;
+}
+
+/**
+ * Se sent en colère
+ */
+void RobotEye::isAngry() {
+  setFeeling(EYE_FEELING_ANGRY);
+  m_eyeLip = getOpenedEye();
+  m_refreshEye = true; 
+  m_eyeLip_movement = &eyelip_movement_angry;
+}
+
+/**
+ * Se sent apeuré
+ */
+void RobotEye::isScared() {
+  setFeeling(EYE_FEELING_SCARED);
+  m_eyeLip = getOpenedEye();
+  m_refreshEye = true; 
+  m_eyeLip_movement = &eyelip_movement_scared;
 }
 
 /**
  * Retourne l'état de l'oeil
  */
-int RobotEye::getState() {
+long RobotEye::getState() {
   return m_state;
 }
 
@@ -245,13 +305,18 @@ int RobotEye::getState() {
  * Traitement de l'état opening
  */
 void RobotEye::processStateOpening() {
-  if(m_stateTimeline.isTimePasted(eyelib_movement.speed)) {
-    m_stateStep++;
-    if(m_stateStep >= eyelib_movement.count) {
+  if(m_eyeLip_movement==NULL) {
       setState(EYE_STATE_OPENED); 
-      m_eyeLib = &eyelib;
+      m_eyeLip = getOpenedEye();
+      return;
+  }
+  if(m_stateTimeline.isTimePasted(m_eyeLip_movement->speed)) {
+    m_stateStep++;
+    if(m_stateStep >= m_eyeLip_movement->count) {
+      setState(EYE_STATE_OPENED); 
+      m_eyeLip = getOpenedEye();
     } else {
-      m_eyeLib = &eyelib_movement.frames[(eyelib_movement.count-1) - m_stateStep];
+      m_eyeLip = &m_eyeLip_movement->frames[(m_eyeLip_movement->count-1) - m_stateStep];
     }
     m_refreshEye = true; 
   }
@@ -261,13 +326,18 @@ void RobotEye::processStateOpening() {
  * Traitement de l'état closing
  */
 void RobotEye::processStateClosing() {
-  if(m_stateTimeline.isTimePasted(eyelib_movement.speed)) {
-    m_stateStep++;
-    if(m_stateStep >= eyelib_movement.count) {
+  if(m_eyeLip_movement==NULL) {
       setState(EYE_STATE_CLOSED); 
-      m_eyeLib = &eyelib_closed;
+      m_eyeLip = getClosedEye();
+      return;
+  }
+  if(m_stateTimeline.isTimePasted(m_eyeLip_movement->speed)) {
+    m_stateStep++;
+    if(m_stateStep >= m_eyeLip_movement->count) {
+      setState(EYE_STATE_CLOSED); 
+      m_eyeLip = getClosedEye();
     } else {
-      m_eyeLib = &eyelib_movement.frames[m_stateStep];
+      m_eyeLip = &m_eyeLip_movement->frames[m_stateStep];
     }
     m_refreshEye = true; 
   }
@@ -277,15 +347,20 @@ void RobotEye::processStateClosing() {
  * Traitement de l'état clignotement
  */
 void RobotEye::processStateBlinking() {
-  if(m_stateTimeline.isTimePasted(eyelib_movement.speed)) {
+  if(m_eyeLip_movement==NULL) {
+      setState(EYE_STATE_OPENED); 
+      m_eyeLip = getOpenedEye();
+      return;
+  }
+  if(m_stateTimeline.isTimePasted(m_eyeLip_movement->speed)) {
     m_stateStep++;
-    if(m_stateStep < eyelib_movement.count) {
-      m_eyeLib = &eyelib_movement.frames[m_stateStep];
-    } else if(m_stateStep >= eyelib_movement.count && m_stateStep < 2*eyelib_movement.count) {
-      m_eyeLib = &eyelib_movement.frames[(eyelib_movement.count-1) - (m_stateStep-eyelib_movement.count)];
+    if(m_stateStep < m_eyeLip_movement->count) {
+      m_eyeLip = &m_eyeLip_movement->frames[m_stateStep];
+    } else if(m_stateStep >= m_eyeLip_movement->count && m_stateStep < 2*m_eyeLip_movement->count) {
+      m_eyeLip = &m_eyeLip_movement->frames[(m_eyeLip_movement->count-1) - (m_stateStep-m_eyeLip_movement->count)];
     } else {
       setState(EYE_STATE_OPENED); 
-      m_eyeLib = &eyelib;
+      m_eyeLip = getOpenedEye();
     }
     m_refreshEye = true; 
   }
