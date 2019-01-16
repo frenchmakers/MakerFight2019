@@ -56,6 +56,8 @@ void RobotEye::init(uint8_t addr, uint8_t type) {
   m_actionTimeline.reset();
   m_stateTimeline.reset();
 
+  m_reversed = false;
+  
   isNormal();
 }
 
@@ -104,8 +106,9 @@ void RobotEye::displayFrame(frame *f) {
   Wire.beginTransmission(i2c_addr);
   Wire.write((uint8_t)0x00); // start at address $00
 
+  bool isReversed = (eye_type == EYE_LEFT && !m_reversed) || (eye_type == EYE_RIGHT && m_reversed);
   uint16_t *pf = *f;
-  if(eye_type == EYE_LEFT) {
+  if(isReversed) {
     pf += 8;
     for (uint8_t i=0; i<8; i++) {
       uint16_t l = (*--pf);
@@ -147,6 +150,8 @@ masked_frame*RobotEye::getClosedEye() {
  * Dessine l'oeil
  */
 void RobotEye::drawEye() {
+  bool isReversed = (eye_type == EYE_LEFT && !m_reversed) || (eye_type == EYE_RIGHT && m_reversed);
+  
   // Dessin du fond
   for(uint8_t i = 0; i<8; i++) {
     displayBuffer[i] = eye_back[i];
@@ -156,9 +161,9 @@ void RobotEye::drawEye() {
   uint16_t pixels = eye_pupil_pixels;
   uint8_t line = eye_pupil_line;
   if( m_lookAt & EYE_LOOK_RIGHT ) {
-    pixels = eye_type == EYE_LEFT ? pixels >> 1 : pixels << 1;
+    pixels = !isReversed ? pixels >> 1 : pixels << 1;
   } else if( m_lookAt & EYE_LOOK_LEFT ) {
-    pixels = eye_type == EYE_LEFT ? pixels << 1 : pixels >> 1;
+    pixels = !isReversed ? pixels << 1 : pixels >> 1;
   } 
   if( m_lookAt & EYE_LOOK_UP ) {
     line = line - 1;
@@ -193,6 +198,14 @@ void RobotEye::lookAt(uint8_t direction) {
  */
 uint8_t RobotEye::getLookAt() {
   return m_lookAt;
+}
+
+/**
+ * Inversion de l'oeil
+ */
+void RobotEye::reverse() {
+  m_reversed = !m_reversed;
+  m_refreshEye = true;
 }
 
 /**

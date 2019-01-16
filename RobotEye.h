@@ -88,6 +88,7 @@ class RobotEye {
     uint8_t i2c_addr;
     frame displayBuffer;
     bool m_refreshEye;
+    bool m_reversed;
     uint8_t m_lookAt;
     masked_frame *m_eyeLip;
     masked_animation *m_eyeLip_movement;
@@ -124,6 +125,8 @@ class RobotEye {
 
     void lookAt(uint8_t direction = EYE_LOOK_FORWARD);
     uint8_t getLookAt();
+
+    void reverse();
 
     void open();
     void close();

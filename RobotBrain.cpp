@@ -67,6 +67,12 @@ void RobotBrain::run() {
     } else if(eyeFeeling==EYE_FEELING_SCARED) {
       m_right->isNormal();
       m_left->isNormal();
+
+      m_right->reverse();
+      m_left->reverse();
+      RobotEye *tmp=m_right;
+      m_right = m_left;
+      m_left = tmp;
     }
   }
   
