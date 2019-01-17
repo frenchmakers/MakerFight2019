@@ -10,6 +10,14 @@
 
 #include "RobotEye.h"
 
+#define MOVE_NONE     0x0000
+#define MOVE_FORWARD  0x0001
+#define MOVE_BACKWARD 0x0002
+#define MOVE_LEFT     0x0010
+#define MOVE_RIGHT    0x0020
+#define SHOCK         0x0100
+#define ACTION1       0x0200
+
 /**
  * Cerveau du robot
  */
@@ -21,6 +29,9 @@ class RobotBrain {
     Timeline m_blinkTimeline;
     Timeline m_feelingTimeline;
   protected:
+    int getMovement();
+    void runDemo();
+    void runController();
   public:
     RobotBrain();
 

@@ -95,7 +95,6 @@ class RobotEye {
     long m_state;
     int m_stateStep;
     int m_actionStep;
-    Timeline m_eyeTimeline;
     Timeline m_stateTimeline;
     Timeline m_actionTimeline;
   protected:

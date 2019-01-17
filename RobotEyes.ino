@@ -15,7 +15,7 @@ void setup() {
   Serial.begin(9600);
   #endif
   
-  brain.init(LEFT_EYE_ADDR, RIGHT_EYE_ADDR);
+  brain.init(LEFT_EYE_ADDR, RIGHT_EYE_ADDR);  
 }
 
 void loop() {

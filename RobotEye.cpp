@@ -52,7 +52,6 @@ void RobotEye::init(uint8_t addr, uint8_t type) {
   m_state = EYE_STATE_NONE;
   m_stateStep = 0;
 
-  m_eyeTimeline.reset();
   m_actionTimeline.reset();
   m_stateTimeline.reset();
 
