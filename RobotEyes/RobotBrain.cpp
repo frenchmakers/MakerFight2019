@@ -222,7 +222,13 @@ void RobotBrain::runController() {
     }
     // On a une action
     if(move & ACTION1) {
-      reverseEyes();
+      if(eyeState != EYE_STATE_DEAD) {
+        m_right->dead();
+        m_left->dead();
+      } else {
+        m_right->open();
+        m_left->open();
+      }
     }
   } else if(eyeAction == EYE_ACTION_ROLLING) {
     if(m_timeline.isTimePasted(1500)) {

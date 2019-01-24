@@ -149,6 +149,13 @@ masked_frame*RobotEye::getClosedEye() {
  * Dessine l'oeil
  */
 void RobotEye::drawEye() {
+  // Cas des yeux non animé
+  long state = getEyeState(this);
+  if(state==EYE_STATE_DEAD) {
+    displayFrame(&eye_dead);
+    return;
+  }
+  
   bool isReversed = (eye_type == EYE_LEFT && !m_reversed) || (eye_type == EYE_RIGHT && m_reversed);
   
   // Dessin du fond
@@ -273,6 +280,16 @@ void RobotEye::blink() {
   setState(EYE_STATE_BLINKING);
   m_stateStep = -1;
   m_eyeLip = getOpenedEye();
+  m_refreshEye = true; 
+}
+
+/**
+ * L'oeil est mort
+ */
+void RobotEye::dead() {
+  setState(EYE_STATE_DEAD);
+  m_stateStep = -1;
+  m_eyeLip = NULL;
   m_refreshEye = true; 
 }
 
