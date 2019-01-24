@@ -23,11 +23,13 @@ RobotBrain::RobotBrain() {
 void RobotBrain::init(uint8_t left_addr, uint8_t right_addr) {
   randomSeed(analogRead(0));  
 
-#ifdef JOYSTICK_CONTOLLER
+#if MODE == MODE_JOYSTICK
   pinMode(JOYSTICK_SWITCH_PIN, INPUT);
   pinMode(JOYSTICK_SHOCK_PIN, INPUT);
   digitalWrite(JOYSTICK_SWITCH_PIN, HIGH);
 #endif
+
+  controllerState = 0;
   
   m_right->init(right_addr, EYE_RIGHT);
   m_left->init(left_addr, EYE_LEFT);
@@ -38,54 +40,54 @@ void RobotBrain::init(uint8_t left_addr, uint8_t right_addr) {
 }
 
 /**
+ * Inversions du sens des yeux
+ */
+void RobotBrain::reverseEyes() {
+  m_right->reverse();
+  m_left->reverse();
+  RobotEye *tmp=m_right;
+  m_right = m_left;
+  m_left = tmp;
+}
+
+/**
  * Lecture du mouvement
  */
 int RobotBrain::getMovement() {
-#ifdef JOYSTICK_CONTROLLER
   // Contrôle par joystick
   int x = analogRead(JOYSTICK_AXE_X_PIN);
   int y = analogRead(JOYSTICK_AXE_Y_PIN);
   int move = MOVE_NONE;
-  if(y<100) {
+  if(y<200) {
     move |= MOVE_FORWARD;
-  } else if(y>900) {
+  } else if(y>800) {
     move |= MOVE_BACKWARD;
   }
-  if(x<100) {
+  if(x<200) {
     move |= MOVE_RIGHT;
-  } else if(x>900) {
+  } else if(x>800) {
     move |= MOVE_LEFT;
   }
   if(digitalRead(JOYSTICK_SHOCK_PIN)==HIGH) {
-    move |= SHOCK;
+    if(!(controllerState & SHOCK)) {
+      move |= SHOCK;
+    }
+    controllerState |= SHOCK;
+  } else {
+    controllerState &= ~SHOCK;
   }
-  if(digitalRead(JOYSTICK_SWITCH_PIN)==HIGH) {
-    move |= ACTION1;
+  if(digitalRead(JOYSTICK_SWITCH_PIN)==LOW) {
+    if(!(controllerState & ACTION1)) {
+      move |= ACTION1;
+    }
+    controllerState |= ACTION1;
+  } else {
+    controllerState &= ~ACTION1;
   }
   return move;
-#else
-  // Démo
-    while(m_timeline.isTimePasted(1000)) 
-    {
-      uint8_t look = m_right->getLookAt();
-      
-      if(look == EYE_LOOK_FORWARD)            return MOVE_RIGHT;
-      else if(look == EYE_LOOK_RIGHT)         return MOVE_LEFT; 
-      else if(look == EYE_LOOK_LEFT)          return MOVE_FORWARD; 
-      else if(look == EYE_LOOK_UP)            return MOVE_BACKWARD; 
-      else if(look == EYE_LOOK_DOWN)          return MOVE_FORWARD | MOVE_RIGHT; 
-      else if(look == EYE_LOOK_UP_RIGHT)      return MOVE_BACKWARD | MOVE_LEFT; 
-      else if(look == EYE_LOOK_DOWN_LEFT)     return MOVE_BACKWARD | MOVE_RIGHT; 
-      else if(look == EYE_LOOK_DOWN_RIGHT)    return MOVE_FORWARD | MOVE_LEFT; 
-      //else if(look == EYE_LOOK_UP_LEFT)       return MOVE_NONE; 
-      else {
-        return MOVE_NONE;
-      }
-    }
-#endif
-  
 }
 
+#if MODE == MODE_DEMO
 /**
  * Exécution en mode démo
  */
@@ -122,12 +124,7 @@ void RobotBrain::runDemo() {
     } else if(eyeFeeling==EYE_FEELING_SCARED) {
       m_right->isNormal();
       m_left->isNormal();
-
-      m_right->reverse();
-      m_left->reverse();
-      RobotEye *tmp=m_right;
-      m_right = m_left;
-      m_left = tmp;
+      reverseEyes();
     }
   }
   
@@ -170,6 +167,8 @@ void RobotBrain::runDemo() {
     }
   }
 }
+
+#elif MODE == MODE_JOYSTICK
 
 /**
  * Exécution du cerveau avec un contrôleur
@@ -221,6 +220,10 @@ void RobotBrain::runController() {
       m_left->rolling();
       m_timeline.reset();
     }
+    // On a une action
+    if(move & ACTION1) {
+      reverseEyes();
+    }
   } else if(eyeAction == EYE_ACTION_ROLLING) {
     if(m_timeline.isTimePasted(1500)) {
       m_right->normal();
@@ -229,14 +232,15 @@ void RobotBrain::runController() {
   }
   
 }
+#endif
 
 /**
  * Exécution du cerveau
  */
 void RobotBrain::run() {
-#ifdef JOYSTICK_CONTROLLER
+#if MODE == MODE_JOYSTICK
   runController();
-#else
+#elif MODE == MODE_DEMO
   runDemo();
 #endif
 }

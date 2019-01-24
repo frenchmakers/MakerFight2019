@@ -28,10 +28,17 @@ class RobotBrain {
     Timeline m_timeline;
     Timeline m_blinkTimeline;
     Timeline m_feelingTimeline;
+#if MODE == MODE_JOYSTICK
+    int controllerState;
+#endif
   protected:
-    int getMovement();
+    void reverseEyes();
+#if MODE == MODE_DEMO
     void runDemo();
+#elif MODE == MODE_JOYSTICK
+    int getMovement();
     void runController();
+#endif
   public:
     RobotBrain();
 
