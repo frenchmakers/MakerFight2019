@@ -14,7 +14,42 @@ RobotBrain brain = RobotBrain();
 volatile unsigned long timer_start;
 volatile int last_interrupt_time;
 volatile int pulse_time;
-
+/*
+class Test {
+  private:
+    volatile unsigned long _timer_start;
+    volatile int _last_interrupt_time;
+    volatile int _pulse_time;
+  
+    static void processSignal() 
+    {
+        //record the interrupt time so that we can tell if the receiver has a signal from the transmitter 
+        _last_interrupt_time = micros(); 
+        //if the pin has gone HIGH, record the microseconds since the Arduino started up 
+        if(digitalRead(CHANNEL_1_PIN) == HIGH) 
+        { 
+            _timer_start = micros();
+        } 
+        //otherwise, the pin has gone LOW 
+        else
+        { 
+            //only worry about this if the timer has actually started
+            if(_timer_start != 0)
+            { 
+                //record the pulse time
+                _pulse_time = ((volatile int)micros() - _timer_start);
+                //restart the timer
+                _timer_start = 0;
+            }
+        } 
+    };
+     
+  public:
+    Test() {
+      attachInterrupt(digitalPinToInterrupt(CHANNEL_1_PIN), processSignal, CHANGE);
+    };
+};
+*/
 void calcSignal() 
 {
     //record the interrupt time so that we can tell if the receiver has a signal from the transmitter 
@@ -54,4 +89,4 @@ void loop() {
   //t = millis() - t;
   
   Serial.println(pulse_time);
- }
+}
