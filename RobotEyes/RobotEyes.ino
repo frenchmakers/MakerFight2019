@@ -10,6 +10,9 @@
 
 RobotBrain brain = RobotBrain();
 
+//#define ENABLE_RC
+
+#if ENABLE_RC
 #define CHANNEL_1_PIN 2
 volatile unsigned long timer_start;
 volatile int last_interrupt_time;
@@ -72,14 +75,16 @@ void calcSignal()
         }
     } 
 } 
+#endif
 
 void setup() {
   #ifdef DEBUG
   Serial.begin(9600);
   #endif
-  
-  attachInterrupt(digitalPinToInterrupt(CHANNEL_1_PIN), calcSignal, CHANGE);
 
+#if ENABLE_RC  
+  attachInterrupt(digitalPinToInterrupt(CHANNEL_1_PIN), calcSignal, CHANGE);
+#endif
   brain.init(LEFT_EYE_ADDR, RIGHT_EYE_ADDR);  
 }
 
@@ -88,5 +93,7 @@ void loop() {
   brain.run();
   //t = millis() - t;
   
+#if ENABLE_RC  
   Serial.println(pulse_time);
+#endif
 }
