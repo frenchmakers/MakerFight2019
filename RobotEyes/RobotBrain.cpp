@@ -372,7 +372,12 @@ void RobotBrain::run() {
   unsigned long controls = getControls();
   long eyeState = getEyeState(m_right);
   long eyeFeeling = getEyeFeeling(m_right);
-  long eyeAction = getEyeAction(m_right);Serial.println(eyeAction);
+  long eyeAction = getEyeAction(m_right);
+
+  // Inversion ?
+  if(getActions(CTRL_REVERSE)) {
+    reverseEyes();
+  }
 
   // Traitement de l'état
   String state = "NONE";
@@ -419,6 +424,8 @@ void RobotBrain::run() {
         stateDead();
       } else if(getActions(CTRL_WIN | CTRL_ACTION2)) {
         stateWin();
+      } else if(getActions(CTRL_STOP)) {
+        stateSleep();
       } else {
         bool changed = false;
         int lookAt = m_right->getLookAt();
@@ -498,9 +505,4 @@ void RobotBrain::run() {
   m_right->run();
   m_left->run();
 
-#if MODE == MODE_JOYSTICK
-  //runController();
-#elif MODE == MODE_DEMO
-  //runDemo();
-#endif
 }
