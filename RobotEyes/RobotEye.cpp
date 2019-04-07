@@ -46,11 +46,7 @@ void RobotEye::init(uint8_t addr, uint8_t type) {
   blinkRate(HT16K33_BLINK_OFF);
   setBrightness(15); // max brightness
 
-  clear();
-  m_refreshEye = false;
-  m_lookAt = EYE_LOOK_FORWARD;
-  m_state = EYE_STATE_NONE;
-  m_stateStep = 0;
+  reset();
 
   m_actionTimeline.reset();
   m_stateTimeline.reset();
@@ -291,6 +287,17 @@ void RobotEye::dead() {
   m_stateStep = -1;
   m_eyeLip = NULL;
   m_refreshEye = true; 
+}
+
+/**
+ * Réinitialisation de l'oeil
+ */
+void RobotEye::reset() {
+  clear();
+  m_refreshEye = false;
+  m_lookAt = EYE_LOOK_FORWARD;
+  m_state = EYE_STATE_NONE;
+  m_stateStep = 0;
 }
 
 /**

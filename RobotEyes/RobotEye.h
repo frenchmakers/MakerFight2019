@@ -99,11 +99,11 @@ class RobotEye {
     Timeline m_stateTimeline;
     Timeline m_actionTimeline;
   protected:
-    void clear();
     void displayFrame(frame *f);
 
     void drawEye();
     
+    void clear();
     void setAction(long action);
     void setState(long state);
     void setFeeling(long feeling);
@@ -132,6 +132,7 @@ class RobotEye {
     void close();
     void blink();
     void dead();
+    void reset();
 
     void normal();
     void rolling();

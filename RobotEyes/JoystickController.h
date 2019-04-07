@@ -26,8 +26,38 @@ class JoystickController : public RobotController {
         virtual void run() {
 
         }
-        virtual long getControls() { 
-            return CTRL_NONE;
+        virtual unsigned long getControls() { 
+            int x = analogRead(JOYSTICK_AXE_X_PIN);
+            int y = analogRead(JOYSTICK_AXE_Y_PIN);
+            unsigned long control = CTRL_NONE;
+            if(y<200) {
+                control |= CTRL_FORWARD;
+            } else if(y>800) {
+                control |= CTRL_BACKWARD;
+            }
+            if(x<200) {
+                control |= CTRL_RIGHT;
+            } else if(x>800) {
+                control |= CTRL_LEFT;
+            }
+            Serial.println(digitalRead(JOYSTICK_SHOCK_PIN));
+            if(digitalRead(JOYSTICK_SHOCK_PIN)==HIGH) {
+                if(!(controllerState & CTRL_SHOCK)) {
+                    control |= CTRL_SHOCK;
+                }
+                controllerState |= CTRL_SHOCK;
+            } else {
+                controllerState &= ~CTRL_SHOCK;
+            }
+            if(digitalRead(JOYSTICK_SWITCH_PIN)==LOW) {
+                if(!(controllerState & CTRL_ACTION1)) {
+                    control |= CTRL_ACTION1;
+                }
+                controllerState |= CTRL_ACTION1;
+            } else {
+                controllerState &= ~CTRL_ACTION1;
+            }
+            return control;
         }
 };
 

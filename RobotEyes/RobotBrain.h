@@ -11,6 +11,16 @@
 #include "RobotController.h"
 #include "RobotEye.h"
 
+#define BSTATE_NONE     0x0000
+#define BSTATE_START    0x0001
+#define BSTATE_STOP     0x0002
+#define BSTATE_WAIT     0x0003
+#define BSTATE_SLEEP    0x0004
+#define BSTATE_SHOCKED  0x0005
+#define BSTATE_BORED    0x0006
+#define BSTATE_DEAD     0x0007
+#define BSTATE_WIN      0x0008
+
 #define MOVE_NONE     0x0000
 #define MOVE_FORWARD  0x0001
 #define MOVE_BACKWARD 0x0002
@@ -30,6 +40,9 @@ class RobotBrain {
     Timeline m_timeline;
     Timeline m_blinkTimeline;
     Timeline m_feelingTimeline;
+    int m_bstate;
+    unsigned long m_controls, m_actions;
+
 #if MODE == MODE_JOYSTICK
     int controllerState;
 #endif
@@ -41,6 +54,20 @@ class RobotBrain {
     int getMovement();
     void runController();
 #endif
+
+    void stateStart();
+    void stateStop();
+    void stateWakeup();
+    void stateSleep();
+    void stateWait();
+    void stateShocked();
+    void stateBored();
+    void stateDead();
+    void stateWin();
+
+    unsigned long getControls();
+    unsigned long getActions(unsigned long actions);
+
   public:
     RobotBrain();
 

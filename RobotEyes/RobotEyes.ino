@@ -19,7 +19,14 @@ void setup() {
 }
 
 void loop() {
-  //unsigned long t = millis();
+  #if DEBUG
+  unsigned long t = millis();
+  #endif
   brain.run();
-  //t = millis() - t;
+  #if DEBUG
+  t = millis() - t;
+  Serial.print("Brain run: ");
+  Serial.print(t);
+  Serial.println(" ms");
+  #endif
 }

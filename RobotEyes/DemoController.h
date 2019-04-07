@@ -21,7 +21,7 @@ class DemoController : public RobotController {
         virtual void run() {
 
         }
-        virtual long getControls() { 
+        virtual unsigned long getControls() { 
             return CTRL_NONE;
         }
 };
