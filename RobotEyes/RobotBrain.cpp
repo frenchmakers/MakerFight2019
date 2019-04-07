@@ -8,6 +8,11 @@
 
 #include "config.h"
 #include "RobotBrain.h"
+#if MODE == MODE_JOYSTICK
+#include "JoystickController.h"
+#else
+#include "DemoController.h"
+#endif
 
 /**
  * Constructeur
@@ -15,6 +20,11 @@
 RobotBrain::RobotBrain() {
   this->m_left = new RobotEye();
   this->m_right = new RobotEye();
+#if MODE == MODE_JOYSTICK
+  this->m_control = new JoystickController();
+#else
+  this->m_control = new DemoController();
+#endif
 }
 
 /**
@@ -27,12 +37,14 @@ void RobotBrain::init(uint8_t left_addr, uint8_t right_addr) {
   pinMode(JOYSTICK_SWITCH_PIN, INPUT);
   pinMode(JOYSTICK_SHOCK_PIN, INPUT);
   digitalWrite(JOYSTICK_SWITCH_PIN, HIGH);
-#endif
 
   controllerState = 0;
-  
+ #endif
+ 
   m_right->init(right_addr, EYE_RIGHT);
   m_left->init(left_addr, EYE_LEFT);
+
+  m_control->init();
 
   m_timeline.reset();
   m_blinkTimeline.reset();
@@ -48,43 +60,6 @@ void RobotBrain::reverseEyes() {
   RobotEye *tmp=m_right;
   m_right = m_left;
   m_left = tmp;
-}
-
-/**
- * Lecture du mouvement
- */
-int RobotBrain::getMovement() {
-  // Contrôle par joystick
-  int x = analogRead(JOYSTICK_AXE_X_PIN);
-  int y = analogRead(JOYSTICK_AXE_Y_PIN);
-  int move = MOVE_NONE;
-  if(y<200) {
-    move |= MOVE_FORWARD;
-  } else if(y>800) {
-    move |= MOVE_BACKWARD;
-  }
-  if(x<200) {
-    move |= MOVE_RIGHT;
-  } else if(x>800) {
-    move |= MOVE_LEFT;
-  }
-  if(digitalRead(JOYSTICK_SHOCK_PIN)==HIGH) {
-    if(!(controllerState & SHOCK)) {
-      move |= SHOCK;
-    }
-    controllerState |= SHOCK;
-  } else {
-    controllerState &= ~SHOCK;
-  }
-  if(digitalRead(JOYSTICK_SWITCH_PIN)==LOW) {
-    if(!(controllerState & ACTION1)) {
-      move |= ACTION1;
-    }
-    controllerState |= ACTION1;
-  } else {
-    controllerState &= ~ACTION1;
-  }
-  return move;
 }
 
 #if MODE == MODE_DEMO
@@ -171,6 +146,43 @@ void RobotBrain::runDemo() {
 #elif MODE == MODE_JOYSTICK
 
 /**
+ * Lecture du mouvement
+ */
+int RobotBrain::getMovement() {
+  // Contrôle par joystick
+  int x = analogRead(JOYSTICK_AXE_X_PIN);
+  int y = analogRead(JOYSTICK_AXE_Y_PIN);
+  int move = MOVE_NONE;
+  if(y<200) {
+    move |= MOVE_FORWARD;
+  } else if(y>800) {
+    move |= MOVE_BACKWARD;
+  }
+  if(x<200) {
+    move |= MOVE_RIGHT;
+  } else if(x>800) {
+    move |= MOVE_LEFT;
+  }
+  if(digitalRead(JOYSTICK_SHOCK_PIN)==HIGH) {
+    if(!(controllerState & SHOCK)) {
+      move |= SHOCK;
+    }
+    controllerState |= SHOCK;
+  } else {
+    controllerState &= ~SHOCK;
+  }
+  if(digitalRead(JOYSTICK_SWITCH_PIN)==LOW) {
+    if(!(controllerState & ACTION1)) {
+      move |= ACTION1;
+    }
+    controllerState |= ACTION1;
+  } else {
+    controllerState &= ~ACTION1;
+  }
+  return move;
+}
+
+/**
  * Exécution du cerveau avec un contrôleur
  */
 void RobotBrain::runController() {
@@ -244,6 +256,7 @@ void RobotBrain::runController() {
  * Exécution du cerveau
  */
 void RobotBrain::run() {
+  m_control->run();
 #if MODE == MODE_JOYSTICK
   runController();
 #elif MODE == MODE_DEMO

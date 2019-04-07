@@ -8,6 +8,7 @@
 #ifndef RobotBrain_h
 #define RobotBrain_h
 
+#include "RobotController.h"
 #include "RobotEye.h"
 
 #define MOVE_NONE     0x0000
@@ -25,6 +26,7 @@ class RobotBrain {
   private:
     RobotEye *m_left;
     RobotEye *m_right;
+    RobotController *m_control;
     Timeline m_timeline;
     Timeline m_blinkTimeline;
     Timeline m_feelingTimeline;
