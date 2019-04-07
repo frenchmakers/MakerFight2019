@@ -10,6 +10,8 @@
 #include "RobotBrain.h"
 #if MODE == MODE_JOYSTICK
 #include "JoystickController.h"
+#elif MODE == MODE_GYRO
+#include "GyroController.h"
 #else
 #include "DemoController.h"
 #endif
@@ -22,6 +24,8 @@ RobotBrain::RobotBrain() {
   this->m_right = new RobotEye();
 #if MODE == MODE_JOYSTICK
   this->m_control = new JoystickController();
+#elif MODE == MODE_GYRO
+  this->m_control = new GyroController();
 #else
   this->m_control = new DemoController();
 #endif
@@ -175,6 +179,9 @@ void RobotBrain::run() {
   long eyeState = getEyeState(m_right);
   long eyeFeeling = getEyeFeeling(m_right);
   long eyeAction = getEyeAction(m_right);
+#if DEBUG
+  Serial.print("Controls: "); Serial.println(controls);
+#endif
 
   // Inversion ?
   if(getActions(CTRL_REVERSE)) {
