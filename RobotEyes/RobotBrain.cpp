@@ -372,7 +372,7 @@ void RobotBrain::run() {
   unsigned long controls = getControls();
   long eyeState = getEyeState(m_right);
   long eyeFeeling = getEyeFeeling(m_right);
-  long eyeAction = getEyeAction(m_right);
+  long eyeAction = getEyeAction(m_right);Serial.println(eyeAction);
 
   // Traitement de l'état
   String state = "NONE";
@@ -471,7 +471,7 @@ void RobotBrain::run() {
     // Ennui
     case BSTATE_BORED:
       state = "BORED";
-      if(eyeAction == EYE_ACTION_NONE) {
+      if(eyeState != EYE_STATE_BLINKING) {
         stateWait();
       }
       break;

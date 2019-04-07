@@ -40,7 +40,6 @@ class JoystickController : public RobotController {
             } else if(x>800) {
                 control |= CTRL_LEFT;
             }
-            Serial.println(digitalRead(JOYSTICK_SHOCK_PIN));
             if(digitalRead(JOYSTICK_SHOCK_PIN)==HIGH) {
                 if(!(controllerState & CTRL_SHOCK)) {
                     control |= CTRL_SHOCK;
