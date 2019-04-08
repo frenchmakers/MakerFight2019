@@ -10,6 +10,8 @@
 #include "RobotBrain.h"
 #if MODE == MODE_JOYSTICK
 #include "JoystickController.h"
+#elif MODE == MODE_RC
+#include "RcController.h"
 #else
 #include "DemoController.h"
 #endif
@@ -22,6 +24,8 @@ RobotBrain::RobotBrain() {
   this->m_right = new RobotEye();
 #if MODE == MODE_JOYSTICK
   this->m_control = new JoystickController();
+#elif MODE == MODE_RC
+  this->m_control = new RcController();
 #else
   this->m_control = new DemoController();
 #endif

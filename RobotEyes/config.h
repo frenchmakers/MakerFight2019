@@ -18,10 +18,12 @@
 // Modes de fonctionnement
 #define MODE_DEMO       0
 #define MODE_JOYSTICK   1
+#define MODE_RC         2
 
 // Définition du mode de fonctionnement
-#define MODE MODE_DEMO
+//#define MODE MODE_DEMO
 //#define MODE MODE_JOYSTICK
+#define MODE MODE_RC
 
 // Configuration du mode joystick
 #if MODE == MODE_JOYSTICK
@@ -29,6 +31,11 @@
 #define JOYSTICK_AXE_X_PIN  1       // port anologique pour l'axe des X
 #define JOYSTICK_AXE_Y_PIN  0       // port anologique pour l'axe des Y
 #define JOYSTICK_SHOCK_PIN  3       // port digital pour le détecteur de choc
+#endif
+
+// Configuration du mode MODE_RC
+#if MODE == MODE_RC
+//#define THREE_STATE_CHANNEL 2       // Channel pour le bouton trois états
 #endif
 
 #endif // config_h
