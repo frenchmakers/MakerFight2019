@@ -159,8 +159,8 @@ void RobotBrain::stateDead() {
  */
 void RobotBrain::stateWin() {
   m_bstate = BSTATE_WIN;
-  m_left->dead();
-  m_right->dead();
+  m_left->win();
+  m_right->win();
 }
 
 /**
@@ -222,9 +222,9 @@ void RobotBrain::run() {
       state="WAIT";
       if(getActions(CTRL_SHOCK)) {
         stateShocked();
-      } else if(getActions(CTRL_LOST | CTRL_ACTION1)) {
+      } else if(getActions(CTRL_LOST | CTRL_ACTION2)) {
         stateDead();
-      } else if(getActions(CTRL_WIN | CTRL_ACTION2)) {
+      } else if(getActions(CTRL_WIN | CTRL_ACTION1)) {
         stateWin();
       } else if(getActions(CTRL_STOP)) {
         stateSleep();

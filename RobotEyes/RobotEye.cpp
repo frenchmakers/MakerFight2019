@@ -29,6 +29,7 @@ RobotEye::RobotEye() {
   i2c_addr = 0x00;
   m_eyeLip = NULL;
   m_eyeLip_movement = NULL;
+  m_eye_animation = NULL;
 }
 
 /**
@@ -151,7 +152,12 @@ void RobotEye::drawEye() {
     displayFrame(&eye_dead);
     return;
   }
-  
+  // Une frame d'animation ?
+  if(m_eye_frame != NULL) {
+    displayFrame(m_eye_frame);
+    return;
+  }
+
   bool isReversed = (eye_type == EYE_LEFT && !m_reversed) || (eye_type == EYE_RIGHT && m_reversed);
   
   // Dessin du fond
@@ -239,6 +245,7 @@ void RobotEye::setFeeling(long feeling) {
 void RobotEye::normal() {
   setAction(EYE_ACTION_NONE);
   lookAt(EYE_LOOK_FORWARD);
+  m_eye_frame = NULL;
 }
 
 /**
@@ -290,6 +297,17 @@ void RobotEye::dead() {
 }
 
 /**
+ * L'oeil est en mode vainqueur
+ */
+void RobotEye::win() {
+  setState(EYE_STATE_WIN);
+  m_stateStep = -1;
+  m_eyeLip = NULL;
+  m_eye_animation = &eye_state_win_animation;
+  m_refreshEye = true; 
+}
+
+/**
  * Réinitialisation de l'oeil
  */
 void RobotEye::reset() {
@@ -298,6 +316,9 @@ void RobotEye::reset() {
   m_lookAt = EYE_LOOK_FORWARD;
   m_state = EYE_STATE_NONE;
   m_stateStep = 0;
+  m_eye_animation = NULL;
+  m_eyeLip_movement = NULL;
+  m_eyeLip = NULL;
 }
 
 /**
@@ -403,6 +424,27 @@ void RobotEye::processStateBlinking() {
 }
 
 /**
+ * Traitement de l'état 'winner'
+ */
+void RobotEye::processStateWin() {
+  if(m_eye_animation==NULL) {
+      setState(EYE_STATE_OPENED); 
+      m_eyeLip = getOpenedEye();
+      return;
+  }
+
+  if(m_stateTimeline.isTimePasted(m_eye_animation->speed)) {
+    m_stateStep++;
+    if(m_stateStep < m_eye_animation->count) {
+      m_eye_frame = &m_eye_animation->frames[m_stateStep];
+    } else {
+      m_stateStep = -1;
+    }
+    m_refreshEye = true; 
+  }
+}
+
+/**
  * Traitement de l'action rolling
  */
 void RobotEye::processActionRolling() {
@@ -431,6 +473,7 @@ void RobotEye::run() {
     case EYE_STATE_OPENING:   processStateOpening(); break;
     case EYE_STATE_CLOSING:   processStateClosing(); break;
     case EYE_STATE_BLINKING:  processStateBlinking(); break;
+    case EYE_STATE_WIN:       processStateWin(); break;
   }
   // Traitement des actions
   switch(getEyeAction(this)) {
@@ -443,4 +486,5 @@ void RobotEye::run() {
     drawEye();
     m_refreshEye = false;
   }
+
 }
