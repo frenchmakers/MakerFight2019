@@ -20,8 +20,8 @@
 #define MODE_JOYSTICK   1
 
 // Définition du mode de fonctionnement
-#define MODE MODE_DEMO
-//#define MODE MODE_JOYSTICK
+//#define MODE MODE_DEMO
+#define MODE MODE_JOYSTICK
 
 // Configuration du mode joystick
 #if MODE == MODE_JOYSTICK

@@ -141,8 +141,8 @@ class DemoController : public RobotController {
                     break;
             }
             if(m_reverse_delay<=0) {
-                m_state_reverse ^= CTRL_REVERSE;
-                m_controls |= m_state_reverse;
+                //m_state_reverse ^= CTRL_REVERSE;
+                //m_controls |= m_state_reverse;
                 m_reverse_delay += 8000;
             }
             // On reset la Timeline
