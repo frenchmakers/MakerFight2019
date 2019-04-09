@@ -21,9 +21,9 @@
 #define MODE_RC         2
 
 // Définition du mode de fonctionnement
-//#define MODE MODE_DEMO
+#define MODE MODE_DEMO
 //#define MODE MODE_JOYSTICK
-#define MODE MODE_RC
+//#define MODE MODE_RC
 
 // Configuration du mode joystick
 #if MODE == MODE_JOYSTICK

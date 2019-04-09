@@ -9,6 +9,9 @@
 #define DemoController_h
 
 #include "RobotController.h"
+
+#if MODE == MODE_DEMO
+
 #include "Utils.h"
 
 /**
@@ -152,5 +155,7 @@ class DemoController : public RobotController {
             return m_controls;
         }
 };
+
+#endif  // MODE == MODE_DEMO
 
 #endif // DemoController_h

@@ -10,6 +10,8 @@
 
 #include "RobotController.h"
 
+#if MODE == MODE_JOYSTICK
+
 /**
  * Contrôleur basé sur un joystick
  */
@@ -59,5 +61,7 @@ class JoystickController : public RobotController {
             return control;
         }
 };
+
+#endif  // MODE == MODE_JOYSTICK
 
 #endif // JoystickController_h

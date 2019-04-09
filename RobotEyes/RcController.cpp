@@ -7,6 +7,8 @@
 
 #include "RcController.h"
 
+#if MODE == MODE_RC
+
 #ifdef THREE_STATE_CHANNEL
 volatile unsigned long ts_timer_start;
 volatile int ts_last_interrupt_time;
@@ -174,3 +176,5 @@ unsigned long RcController::getControls() {
 
     return CTRL_NONE;
 }
+
+#endif
