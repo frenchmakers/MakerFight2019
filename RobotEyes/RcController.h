@@ -8,6 +8,8 @@
 #ifndef RcController_h
 #define RcController_h
 
+#include <Arduino.h>
+#include "config.h"
 #include "RobotController.h"
 #include "Utils.h"
 
