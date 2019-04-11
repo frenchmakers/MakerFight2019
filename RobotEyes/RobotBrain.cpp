@@ -83,12 +83,25 @@ unsigned long RobotBrain::getActions(unsigned long actions) {
 }
 
 /**
+ * Robot a l'état NONE
+ */
+void RobotBrain::stateNone() {
+  m_bstate = BSTATE_NONE;
+  m_left->reset();
+  m_right->reset();
+  m_timeline.reset();
+}
+
+/**
  * Démarrage du robot
  */
 void RobotBrain::stateStart() {
   m_bstate = BSTATE_START;
+  m_left->isNormal();
+  m_right->isNormal();
   m_left->open();
   m_right->open();
+  m_timeline.reset();
 }
 
 /**
@@ -98,6 +111,7 @@ void RobotBrain::stateStop() {
   m_bstate = BSTATE_STOP;
   m_left->reset();
   m_right->reset();
+  m_timeline.reset();
 }
 
 /**
@@ -192,7 +206,7 @@ void RobotBrain::run() {
     // Etat non défini
     case BSTATE_NONE:
       state="NONE";
-      if(controls & getActions(CTRL_ACTION1 | CTRL_START)) {
+      if(m_timeline.isTimePasted(3000) || controls & getActions(CTRL_ACTION1 | CTRL_START)) {
         stateStart();
       }
       break;
@@ -292,14 +306,14 @@ void RobotBrain::run() {
     case BSTATE_DEAD:
       state = "DEAD";
       if(getActions(CTRL_ACTION1 | CTRL_ACTION2)) {
-        stateStart();
+        stateNone();
       }
       break;
     // Le robot a gagné
     case BSTATE_WIN:
       state = "WIN";
       if(getActions(CTRL_ACTION1 | CTRL_ACTION2)) {
-        stateStart();
+        stateNone();
       }
       break;
   }

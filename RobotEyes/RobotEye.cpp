@@ -229,6 +229,7 @@ void RobotEye::setAction(long action) {
  */
 void RobotEye::setState(long state) {
   m_state = (m_state & ~EYE_STATE_MASK) | (state & EYE_STATE_MASK);
+  m_stateStep = -1;
   m_stateTimeline.reset();
 }
 
@@ -261,7 +262,6 @@ void RobotEye::rolling() {
  */
 void RobotEye::open() {
   setState(EYE_STATE_OPENING);
-  m_stateStep = -1;
   m_eyeLip = getClosedEye();
   m_refreshEye = true; 
 }
@@ -271,7 +271,6 @@ void RobotEye::open() {
  */
 void RobotEye::close() {
   setState(EYE_STATE_CLOSING);
-  m_stateStep = -1;
   m_eyeLip = getOpenedEye();
   m_refreshEye = true; 
 }
@@ -281,7 +280,6 @@ void RobotEye::close() {
  */
 void RobotEye::blink() {
   setState(EYE_STATE_BLINKING);
-  m_stateStep = -1;
   m_eyeLip = getOpenedEye();
   m_refreshEye = true; 
 }
@@ -291,7 +289,6 @@ void RobotEye::blink() {
  */
 void RobotEye::dead() {
   setState(EYE_STATE_DEAD);
-  m_stateStep = -1;
   m_eyeLip = NULL;
   m_refreshEye = true; 
 }
@@ -301,7 +298,6 @@ void RobotEye::dead() {
  */
 void RobotEye::win() {
   setState(EYE_STATE_WIN);
-  m_stateStep = -1;
   m_eyeLip = NULL;
   m_eye_animation = &eye_state_win_animation;
   m_refreshEye = true; 

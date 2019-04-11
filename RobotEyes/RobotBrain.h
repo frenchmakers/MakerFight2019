@@ -55,6 +55,7 @@ class RobotBrain {
     void runController();
 #endif
 
+    void stateNone();
     void stateStart();
     void stateStop();
     void stateWakeup();
