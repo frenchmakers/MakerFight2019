@@ -95,12 +95,15 @@ void mv2ProcessSignal()
 
 void RcController::init() {
 #ifdef THREE_STATE_CHANNEL
+  Serial.println("Configuration du TS");
   attachInterrupt(digitalPinToInterrupt(THREE_STATE_CHANNEL), tsProcessSignal, CHANGE);
 #endif
 #ifdef MOVE_1_CHANNEL
+  Serial.println("Configuration du Move1");
   attachInterrupt(digitalPinToInterrupt(MOVE_1_CHANNEL), mv1ProcessSignal, CHANGE);
 #endif
 #ifdef MOVE_2_CHANNEL
+  Serial.println("Configuration du Move2");
   attachInterrupt(digitalPinToInterrupt(MOVE_2_CHANNEL), mv2ProcessSignal, CHANGE);
 #endif
 }
@@ -112,10 +115,13 @@ unsigned long RcController::getControls() {
     int pulse;
 
 #ifdef THREE_STATE_CHANNEL
+    #if DEBUG
+    Serial.print("TS pulse: "); Serial.println(ts_pulse_time);
+    #endif
     pulse = ts_pulse_time;
-    if(pulse < THREE_STATE_CHANNEL_LIMIT_WIN) {
+    if(pulse <= THREE_STATE_CHANNEL_LIMIT_WIN) {
         controls |= CTRL_WIN;
-    }else if(pulse > THREE_STATE_CHANNEL_LIMIT_LOST) {
+    }else if(pulse >= THREE_STATE_CHANNEL_LIMIT_LOST) {
         controls |= CTRL_LOST;
     }
 #endif
@@ -124,10 +130,16 @@ unsigned long RcController::getControls() {
     int lMove = 0, rMove = 0;
     // Move1: Roue gauche
     #ifdef MOVE_1_CHANNEL
+    #if DEBUG
+    Serial.print("MV1 pulse: "); Serial.println(mv1_pulse_time);
+    #endif
     lMove = mv1_pulse_time - MOVE_1_CENTER;
     #endif
     // Move2: Roue droite
     #ifdef MOVE_2_CHANNEL
+    #if DEBUG
+    Serial.print("MV2 pulse: "); Serial.println(mv2_pulse_time);
+    #endif
     rMove = mv2_pulse_time - MOVE_2_CENTER;
     #endif
 
@@ -154,6 +166,9 @@ unsigned long RcController::getControls() {
     }
 
 #elif MOVE_MODE == MOVE_MODE_DIRECTION
+    #if DEBUG
+    Serial.print("MV1 pulse: "); Serial.println(mv1_pulse_time);
+    #endif
     // Move1: Avant/Arrière
     #ifdef MOVE_1_CHANNEL
     pulse = mv1_pulse_time;
@@ -174,7 +189,7 @@ unsigned long RcController::getControls() {
     #endif
 #endif
 
-    return CTRL_NONE;
+    return controls;
 }
 
 #endif

@@ -318,7 +318,7 @@ void RobotBrain::run() {
       break;
   }
 #if DEBUG
-  Serial.print("Brain state: "); Serial.println(state);
+  //Serial.print("Brain state: "); Serial.println(state);
 #endif
 
   // Traitement des yeux

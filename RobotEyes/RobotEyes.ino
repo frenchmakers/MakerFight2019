@@ -25,8 +25,8 @@ void loop() {
   brain.run();
   #if DEBUG
   t = millis() - t;
-  Serial.print("Brain run: ");
-  Serial.print(t);
-  Serial.println(" ms");
+  //Serial.print("Brain run: ");
+  //Serial.print(t);
+  //Serial.println(" ms");
   #endif
 }

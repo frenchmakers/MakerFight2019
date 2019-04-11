@@ -22,8 +22,8 @@
 
 // Définition du mode de fonctionnement
 //#define MODE MODE_DEMO
-#define MODE MODE_JOYSTICK
-//#define MODE MODE_RC
+//#define MODE MODE_JOYSTICK
+#define MODE MODE_RC
 
 // Configuration du mode joystick
 #if MODE == MODE_JOYSTICK
@@ -40,15 +40,15 @@
 #define THREE_STATE_CHANNEL_LIMIT_LOST  2000    // Valeur au dessus de laquelle le bouton est en mode "Perdu"
 
 #define MOVE_1_CHANNEL          3       // Channel pour le mouvement 1
-#define MOVE_2_CHANNEL          4       // Channel pour le mouvement 2
+//#define MOVE_2_CHANNEL          4       // Channel pour le mouvement 2
 
 #define MOVE_MODE_DIRECTION     0       // Mode de mouvement directionnel   => Move1: Avant/Arriere; Move2: Droite/Gauche
 #define MOVE_MODE_WHEELS        1       // Mode de mouvement par roues      => Move1: Roue gauche; Move2: Roue droite 
 
-#define MOVE_MODE   MOVE_MODE_WHEELS    // Mode de mouvement
-#define MOVE_1_CENTER           0       // Centre pour le mouvement 1
+#define MOVE_MODE   MOVE_MODE_DIRECTION    // Mode de direction
+#define MOVE_1_CENTER           1500    // Centre pour le mouvement 1
 #define MOVE_1_LIMITS           200     // Limite
-#define MOVE_2_CENTER           0       // Centre pour le mouvement 2
+#define MOVE_2_CENTER           1500    // Centre pour le mouvement 2
 #define MOVE_2_LIMITS           200     // Limite
 #endif
 
