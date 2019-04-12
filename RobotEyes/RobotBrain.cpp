@@ -206,7 +206,7 @@ void RobotBrain::run() {
     // Etat non défini
     case BSTATE_NONE:
       state="NONE";
-      if(m_timeline.isTimePasted(3000) || controls & getActions(CTRL_ACTION1 | CTRL_START)) {
+      if(m_timeline.isTimePasted(2000) || controls & getActions(CTRL_ACTION1 | CTRL_START)) {
         stateStart();
       }
       break;
@@ -305,20 +305,20 @@ void RobotBrain::run() {
     // Le robot est mort
     case BSTATE_DEAD:
       state = "DEAD";
-      if(getActions(CTRL_ACTION1 | CTRL_ACTION2)) {
+      if(getActions(CTRL_ACTION1 | CTRL_ACTION2 | CTRL_START)) {
         stateNone();
       }
       break;
     // Le robot a gagné
     case BSTATE_WIN:
       state = "WIN";
-      if(getActions(CTRL_ACTION1 | CTRL_ACTION2)) {
+      if(getActions(CTRL_ACTION1 | CTRL_ACTION2 | CTRL_START)) {
         stateNone();
       }
       break;
   }
 #if DEBUG
-  //Serial.print("Brain state: "); Serial.println(state);
+  Serial.print("Brain state: "); Serial.println(state);
 #endif
 
   // Traitement des yeux

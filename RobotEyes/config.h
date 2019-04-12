@@ -36,16 +36,17 @@
 // Configuration du mode MODE_RC
 #if MODE == MODE_RC
 #define THREE_STATE_CHANNEL 2           // Channel pour le bouton trois états
-#define THREE_STATE_CHANNEL_LIMIT_WIN   1000    // Valeur en dessous de laquelle le bouton est en mode "Gagné"
-#define THREE_STATE_CHANNEL_LIMIT_LOST  2000    // Valeur au dessus de laquelle le bouton est en mode "Perdu"
+#define THREE_STATE_CHANNEL_LIMIT_WIN   1250    // Valeur en dessous de laquelle le bouton est en mode "Gagné"
+#define THREE_STATE_CHANNEL_LIMIT_LOST  1750    // Valeur au dessus de laquelle le bouton est en mode "Perdu"
 
 #define MOVE_1_CHANNEL          3       // Channel pour le mouvement 1
 //#define MOVE_2_CHANNEL          4       // Channel pour le mouvement 2
 
 #define MOVE_MODE_DIRECTION     0       // Mode de mouvement directionnel   => Move1: Avant/Arriere; Move2: Droite/Gauche
 #define MOVE_MODE_WHEELS        1       // Mode de mouvement par roues      => Move1: Roue gauche; Move2: Roue droite 
+#define MOVE_MODE_ONE_WHEEL     2       // Mode de mouvement sur une roue   => Move1: Détection d'un mouvement 
 
-#define MOVE_MODE   MOVE_MODE_DIRECTION    // Mode de direction
+#define MOVE_MODE   MOVE_MODE_ONE_WHEEL    // Mode de direction
 #define MOVE_1_CENTER           1500    // Centre pour le mouvement 1
 #define MOVE_1_LIMITS           200     // Limite
 #define MOVE_2_CENTER           1500    // Centre pour le mouvement 2

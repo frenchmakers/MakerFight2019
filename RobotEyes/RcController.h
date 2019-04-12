@@ -18,6 +18,7 @@
  */
 class RcController : public RobotController {
     private:
+        unsigned long m_last_controls;
     public:
         virtual void init();
         virtual void run();

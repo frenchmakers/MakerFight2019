@@ -12,7 +12,7 @@ RobotBrain brain = RobotBrain();
 
 void setup() {
   #ifdef DEBUG
-  Serial.begin(9600);
+  Serial.begin(115200);
   #endif
   
   brain.init(LEFT_EYE_ADDR, RIGHT_EYE_ADDR);  
@@ -25,8 +25,8 @@ void loop() {
   brain.run();
   #if DEBUG
   t = millis() - t;
-  //Serial.print("Brain run: ");
-  //Serial.print(t);
-  //Serial.println(" ms");
+  Serial.print("Brain run: ");
+  Serial.print(t);
+  Serial.println(" ms");
   #endif
 }

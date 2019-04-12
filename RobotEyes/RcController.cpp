@@ -94,6 +94,7 @@ void mv2ProcessSignal()
 #endif
 
 void RcController::init() {
+    m_last_controls = 0;
 #ifdef THREE_STATE_CHANNEL
   Serial.println("Configuration du TS");
   attachInterrupt(digitalPinToInterrupt(THREE_STATE_CHANNEL), tsProcessSignal, CHANGE);
@@ -121,8 +122,13 @@ unsigned long RcController::getControls() {
     pulse = ts_pulse_time;
     if(pulse <= THREE_STATE_CHANNEL_LIMIT_WIN) {
         controls |= CTRL_WIN;
-    }else if(pulse >= THREE_STATE_CHANNEL_LIMIT_LOST) {
+    } else if(pulse >= THREE_STATE_CHANNEL_LIMIT_LOST) {
         controls |= CTRL_LOST;
+    } else {
+        // Si les contrôles précédents étaient WIN ou LOST on émet une action de rédémarrage
+        if(m_last_controls & (CTRL_WIN | CTRL_LOST)) {
+            controls |= CTRL_START;
+        }
     }
 #endif
 
@@ -131,14 +137,14 @@ unsigned long RcController::getControls() {
     // Move1: Roue gauche
     #ifdef MOVE_1_CHANNEL
     #if DEBUG
-    Serial.print("MV1 pulse: "); Serial.println(mv1_pulse_time);
+    //Serial.print("MV1 pulse: "); Serial.println(mv1_pulse_time);
     #endif
     lMove = mv1_pulse_time - MOVE_1_CENTER;
     #endif
     // Move2: Roue droite
     #ifdef MOVE_2_CHANNEL
     #if DEBUG
-    Serial.print("MV2 pulse: "); Serial.println(mv2_pulse_time);
+    //Serial.print("MV2 pulse: "); Serial.println(mv2_pulse_time);
     #endif
     rMove = mv2_pulse_time - MOVE_2_CENTER;
     #endif
@@ -167,7 +173,7 @@ unsigned long RcController::getControls() {
 
 #elif MOVE_MODE == MOVE_MODE_DIRECTION
     #if DEBUG
-    Serial.print("MV1 pulse: "); Serial.println(mv1_pulse_time);
+    //Serial.print("MV1 pulse: "); Serial.println(mv1_pulse_time);
     #endif
     // Move1: Avant/Arrière
     #ifdef MOVE_1_CHANNEL
@@ -187,8 +193,23 @@ unsigned long RcController::getControls() {
         controls |= CTRL_RIGHT;
     }
     #endif
+#elif MOVE_MODE == MOVE_MODE_ONE_WHEEL
+    #if DEBUG
+    //Serial.print("MV1 pulse: "); Serial.println(mv1_pulse_time);
+    #endif
+    // Move1: Quelque soit le déplacement on AVANCE
+    #ifdef MOVE_1_CHANNEL
+    pulse = mv1_pulse_time;
+    if( (mv1_pulse_time < MOVE_1_CENTER - MOVE_1_LIMITS) || (mv1_pulse_time > MOVE_1_CENTER + MOVE_1_LIMITS) ) {
+        controls |= CTRL_FORWARD;
+    }
+    #endif
 #endif
 
+    m_last_controls = controls;
+    #if DEBUG
+    Serial.print("Controls: "); Serial.println(controls, HEX);
+    #endif
     return controls;
 }
 
